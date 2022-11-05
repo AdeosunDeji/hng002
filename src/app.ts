@@ -1,9 +1,7 @@
 import express from "express";
 import cors from "cors";
 import { errorResponse, handleError, } from "./utils/responses";
-import {
-  AOP, IUser, IUser2, operation
-} from "./utils/interface";
+import { AOP, IUser, IUser2 } from "./utils/interface";
 
 const app = express();
 
@@ -27,61 +25,37 @@ app.get("/", (req, res) => {
 
 app.post("/", (req, res) => {
   try {
-    let { x, y, operation_type }: AOP = req.body;
-    if (!operation_type && !x && !y) {
-      return errorResponse(res, 400, "Invalid inputs");
+    const { x, y, operation_type }:AOP = req.body;
+    if (!operation_type || !x || !y) {
+      return errorResponse(res, 400, "you have input an invalid input");
     }
-    x = Number(x);
-    x = Number(y);
-    const addition = ["addition", "sum", "add", "plus", "summation", "altogether", "together", "total", "increase"];
-    const subtraction = ["subtraction", "minus", "subtract", "decrease", "discount", "diminution", "subduction", "difference"];
-    const multiplication = ["multiplication", "product", "multiply", "times"];
-    const opArray = operation_type.split(" ");
-    // console.log(opArray);
-    // eslint-disable-next-line array-callback-return
-    const opNumbers = opArray.filter((num) => {
-      if (parseInt(num, 10) && typeof parseInt(num, 10) === "number") {
-        return num;
-      }
-    });
-    x = parseInt(opNumbers[0], 10);
-    y = parseInt(opNumbers[1], 10);
+    const X = Number(x);
+    const Y = Number(y);
     let result;
-    for (let i = 0; i < addition.length; i++) {
-      if (opArray.includes(addition[i])) {
-        operation_type = operation.addition;
-        result = x + y;
-      }
+    if (operation_type === "addition") {
+      result = X + Y;
+    } else if (operation_type === "multiplication") {
+      result = X * Y;
+    } else if (operation_type === "subtraction") {
+      result = X - Y;
+    } else {
+      return errorResponse(res, 400, "Invalid operation");
     }
-    for (let i = 0; i < subtraction.length; i++) {
-      if (opArray.includes(subtraction[i])) {
-        operation_type = operation.subtraction;
-        result = x - y;
-      }
-    }
-    for (let i = 0; i < multiplication.length; i++) {
-      if (opArray.includes(multiplication[i])) {
-        operation_type = operation.multiplication;
-        result = x * y;
-      }
-    }
-    const outcome: IUser2 = {
+    const outcome : IUser2 = {
       slackUsername: "Adeosun Deji",
       operation_type,
       result
     };
     return res.json(outcome);
   } catch (error) {
-    handleError(error, req);
-    return errorResponse(res, 500, "Server error");
+    return errorResponse(res, 500, "serve error");
   }
 });
 
-// Global 404 error handler
 app.use((req, res) => res.status(404).send({
   status: "error",
   error: "Not found",
-  message: "Route not correct kindly check url.",
+  message: "Incorrect route .",
 }));
 
 app.listen(2000, () => {
